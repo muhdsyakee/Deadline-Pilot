@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deadline Pilot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.9.0/ethers.umd.min.js"></script>
+<style>
+  :root{
+    --bg: #14171C;
+    --panel: #1B1F27;
+    --panel-line: #2A2F3A;
+    --amber: #E8A33D;
+    --green: #5FAE7C;
+    --red: #D2665C;
+    --text: #EDEAE3;
+    --muted: #828A99;
+  }
+  *{ box-sizing: border-box; }
+  html,body{
+    margin:0; padding:0;
+    background: var(--bg);
+    color: var(--text);
+    font-family:'Space Grotesk', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .mono{ font-family:'IBM Plex Mono', monospace; }
+
+  .wrap{
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+  }
+
+  /* header */
+  header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom: 40px;
+  }
+  .wordmark{
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+  }
+  .wordmark .glyph{
+    display:inline-block;
+    width:10px; height:10px;
+    background: var(--amber);
+    transform: rotate(45deg);
+  }
+  .wordmark span{
+    font-size: 19px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  #walletBtn{
+    background: transparent;
+    border: 1px solid var(--panel-line);
+    color: var(--text);
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 13px;
+    padding: 8px 14px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: border-color .15s ease;
+  }
+  #walletBtn:hover{ border-color: var(--amber); }
+  #walletBtn.connected{ color: var(--green); border-color: var(--panel-line); }
+
+  /* notifications */
+  #notifyBanner{
+    display:none;
+    gap: 8px;
+    flex-direction: column;
+    margin-bottom: 24px;
+  }
+  #notifyBanner.show{ display:flex; }
+  .notify-row{
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    font-size: 13px;
+    padding: 10px 12px;
+    border-radius: 3px;
+    border: 1px solid var(--panel-line);
+    background: var(--panel);
+  }
+  .notify-row.urgent{ border-color: var(--red); color: var(--red); }
+  .notify-row.soon{ border-color: var(--amber); color: var(--amber); }
+  .notify-row .dot{ width:6px; height:6px; border-radius:50%; background: currentColor; flex-shrink:0; }
+
+  /* now panel */
+  .now-panel{
+    border-top: 1px solid var(--panel-line);
+    border-bottom: 1px solid var(--panel-line);
+    padding: 24px 0 28px;
+    margin-bottom: 36px;
+  }
+  .now-label{
+    font-size: 12px;
+    color: var(--muted);
+    margin: 0 0 10px;
+  }
+  .now-text{
+    font-size: 22px;
+    line-height: 1.45;
+    margin: 0 0 18px;
+    max-width: 68ch;
+  }
+  .now-text .hl{ color: var(--amber); font-weight: 600; }
+  #focusBtn{
+    background: var(--amber);
+    color: #14171C;
+    border: none;
+    font-family:'Space Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 10px 18px;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  #focusBtn:hover{ opacity:.9; }
+  #focusBtn:disabled{ opacity:.4; cursor:default; }
+
+  /* section headings */
+  .section-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom: 12px;
+  }
+  .section-head h2{
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--muted);
+    margin:0;
+  }
+  #addTaskBtn{
+    background: none;
+    border: none;
+    color: var(--amber);
+    font-family:'Space Grotesk', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  /* add task form */
+  #addTaskForm{
+    display:none;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    border-radius: 4px;
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+  #addTaskForm.open{ display:grid; }
+  #addTaskForm input{
+    background: var(--bg);
+    border: 1px solid var(--panel-line);
+    color: var(--text);
+    font-family:'Space Grotesk', sans-serif;
+    font-size: 14px;
+    padding: 10px 12px;
+    border-radius: 3px;
+  }
+  #addTaskForm input:focus{ outline: 1px solid var(--amber); border-color: var(--amber); }
+  #addTaskForm .row{ display:flex; gap:10px; }
+  #addTaskForm .row input{ flex:1; }
+  #addTaskForm .actions{ display:flex; justify-content:flex-end; gap:10px; margin-top: 4px; }
+  #addTaskForm button{
+    font-family:'Space Grotesk', sans-serif;
+    font-size: 13px;
+    padding: 8px 14px;
+    border-radius: 3px;
+    cursor: pointer;
+    border: 1px solid var(--panel-line);
+    background: transparent;
+    color: var(--text);
+  }
+  #addTaskForm button.primary{
+    background: var(--amber);
+    color: #14171C;
+    border: none;
+    font-weight: 600;
+  }
+
+  /* calendar */
+  #calendarBtn{
+    background: none;
+    border: none;
+    color: var(--amber);
+    font-family:'Space Grotesk', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 0;
+    margin-right: 16px;
+  }
+  #calendarPanel{
+    display:none;
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    border-radius: 4px;
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+  #calendarPanel.open{ display:block; }
+  .cal-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom: 12px;
+  }
+  .cal-header button{
+    background:none; border:none; color: var(--text);
+    font-family:'IBM Plex Mono', monospace; font-size: 13px; cursor:pointer;
+  }
+  .cal-header .cal-month{ font-size: 14px; font-weight: 500; }
+  .cal-grid{
+    display:grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    text-align:center;
+  }
+  .cal-dow{ font-size: 11px; color: var(--muted); padding-bottom: 4px; }
+  .cal-day{
+    position:relative;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    padding: 8px 0;
+    border-radius: 3px;
+    color: var(--text);
+    cursor: default;
+  }
+  .cal-day.empty{ visibility:hidden; }
+  .cal-day.has-task{ background: var(--bg); cursor: pointer; }
+  .cal-day.has-task:hover{ outline: 1px solid var(--amber); }
+  .cal-day .cal-dot{
+    display:block; width:4px; height:4px; border-radius:50%;
+    background: var(--amber); margin: 3px auto 0;
+  }
+  .cal-day.today{ color: var(--amber); font-weight: 600; }
+  #calDayTasks{ margin-top: 12px; font-size: 13px; color: var(--muted); }
+  #calDayTasks div{ padding: 4px 0; }
+
+  /* task list */
+  #taskList{ list-style:none; margin:0 0 40px; padding:0; }
+  .task-row{
+    display:flex;
+    align-items:center;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--panel-line);
+  }
+  .status-bar{
+    width: 3px;
+    align-self: stretch;
+    border-radius: 2px;
+    flex-shrink:0;
+  }
+  .status-bar.urgent{ background: var(--red); }
+  .status-bar.soon{ background: var(--amber); }
+  .status-bar.later{ background: var(--green); }
+  .task-info{ flex:1; min-width:0; }
+  .task-name{ font-size: 15px; margin: 0 0 3px; }
+  .task-meta{ font-size: 12.5px; color: var(--muted); }
+  .task-meta .countdown{ color: inherit; }
+  .task-done-btn{
+    background: none;
+    border: 1px solid var(--panel-line);
+    color: var(--muted);
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12px;
+    padding: 7px 12px;
+    border-radius: 3px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .task-done-btn:hover{ border-color: var(--green); color: var(--green); }
+  .task-done-btn:disabled{ opacity: .4; cursor: default; }
+
+  .empty-state{
+    color: var(--muted);
+    font-size: 14px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--panel-line);
+  }
+
+  /* on-chain log footer */
+  .log-strip{
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    padding-top: 20px;
+    color: var(--muted);
+    font-size: 12.5px;
+  }
+  .log-strip .diamond{
+    width:6px; height:6px;
+    background: var(--muted);
+    transform: rotate(45deg);
+    flex-shrink:0;
+  }
+  .log-strip.active .diamond{ background: var(--green); }
+  #logAddress{ color: var(--muted); }
+
+  /* focus session modal */
+  #focusModal{
+    display:none;
+    position:fixed; inset:0;
+    background: rgba(10,12,15,0.85);
+    align-items:center; justify-content:center;
+    z-index: 100;
+  }
+  #focusModal.open{ display:flex; }
+  .focus-card{
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    border-radius: 6px;
+    padding: 36px 32px;
+    max-width: 340px;
+    width: 90%;
+    text-align:center;
+  }
+  .focus-card .focus-task{ font-size: 14px; color: var(--muted); margin: 0 0 6px; }
+  .focus-card .focus-name{ font-size: 18px; margin: 0 0 24px; }
+  .focus-card .focus-time{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 48px;
+    color: var(--amber);
+    margin: 0 0 24px;
+  }
+  .focus-actions{ display:flex; gap:10px; justify-content:center; margin-bottom: 10px; }
+  .focus-actions button{
+    font-family:'Space Grotesk', sans-serif;
+    font-size: 13px;
+    padding: 9px 16px;
+    border-radius: 3px;
+    cursor: pointer;
+    border: 1px solid var(--panel-line);
+    background: transparent;
+    color: var(--text);
+  }
+  .focus-actions button.primary{ background: var(--amber); color:#14171C; border:none; font-weight:600; }
+  #focusCloseBtn{
+    background:none; border:none; color: var(--muted);
+    font-size: 12.5px; cursor:pointer; margin-top: 6px;
+  }
+  #focusDoneRow{ display:none; margin-top: 14px; }
+  #focusDoneRow.show{ display:block; }
+
+  @media (max-width: 480px){
+    .wrap{ padding: 24px 18px 60px; }
+    .now-text{ font-size: 19px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header>
+    <div class="wordmark">
+      <span class="glyph"></span>
+      <span>Deadline Pilot</span>
+    </div>
+    <button id="walletBtn" onclick="connectWallet()">Connect wallet</button>
+  </header>
+
+  <div id="notifyBanner"></div>
+
+  <div class="now-panel">
+    <p class="now-label">Right now</p>
+    <p class="now-text" id="nowText">Add a task below and Deadline Pilot will tell you what to work on first.</p>
+    <button id="focusBtn" disabled>Start focus session</button>
+  </div>
+
+  <div class="section-head">
+    <h2>Your tasks</h2>
+    <div>
+      <button id="calendarBtn" onclick="toggleCalendar()">📅 Calendar</button>
+      <button id="addTaskBtn" onclick="toggleForm()">+ Add task</button>
+    </div>
+  </div>
+
+  <div id="calendarPanel">
+    <div class="cal-header">
+      <button onclick="shiftMonth(-1)">&larr;</button>
+      <span class="cal-month" id="calMonthLabel"></span>
+      <button onclick="shiftMonth(1)">&rarr;</button>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+    <div id="calDayTasks"></div>
+  </div>
+
+  <div id="addTaskForm">
+    <input type="text" id="inputName" placeholder="Task name, e.g. Database ERD">
+    <div class="row">
+      <input type="date" id="inputDeadline">
+      <input type="number" id="inputEffort" placeholder="Hours needed" min="0.5" step="0.5">
+    </div>
+    <div class="actions">
+      <button onclick="toggleForm()">Cancel</button>
+      <button class="primary" onclick="addTask()">Add task</button>
+    </div>
+  </div>
+
+  <ul id="taskList"></ul>
+
+  <div class="log-strip" id="logStrip">
+    <span class="diamond"></span>
+    <span id="logText">Connect your wallet to log completed tasks on-chain.</span>
+  </div>
+
+</div>
+
+<div id="focusModal">
+  <div class="focus-card">
+    <p class="focus-task">Focus session</p>
+    <p class="focus-name" id="focusTaskName">Task name</p>
+    <p class="focus-time mono" id="focusTime">25:00</p>
+    <div class="focus-actions">
+      <button class="primary" id="focusStartBtn" onclick="toggleFocusTimer()">Start</button>
+      <button onclick="resetFocusTimer()">Reset</button>
+    </div>
+    <div id="focusDoneRow">
+      <button class="primary" onclick="finishFocusSession()">Mark task done</button>
+    </div>
+    <button id="focusCloseBtn" onclick="closeFocusModal()">Close</button>
+  </div>
+</div>
+
+<script>
+  // ---- Fill these in after deploying TaskLog.sol ----
+  const CONTRACT_ADDRESS = "0x697C4460302b9Bed7343df09b84b1868217ACE08";
+  const CONTRACT_ABI = [
+    "function completeTask(string taskName) public",
+    "function getTaskCount(address student) public view returns (uint256)",
+    "event TaskCompleted(address indexed student, string taskName, uint256 timestamp)"
+  ];
+
+  const BOT_CHAIN_TESTNET = {
+    chainIdHex: "0x3C8", // 968 in hex
+    chainName: "BOT Chain Testnet",
+    rpcUrls: ["https://rpc.bohr.life"],
+    nativeCurrency: { name: "BOT", symbol: "BOT", decimals: 18 },
+    blockExplorerUrls: ["https://scan.bohr.life/"]
+  };
+
+  // ---- Paste your deployed Cloudflare Worker URL here ----
+  const AI_WORKER_URL = "https://deadline-pilot-ai.muhdsykr13.workers.dev/";
+
+  let provider, signer, contract, userAddress = null;
+  let tasks = JSON.parse(localStorage.getItem("deadlinePilotTasks") || "[]");
+  let aiPlan = null; // cached result of the last successful AI call
+  let currentPlan = null;
+  let calMonth = new Date();
+  let notifiedToday = new Set(JSON.parse(sessionStorage.getItem("notifiedToday") || "[]"));
+
+  // ---------- notifications ----------
+  function renderNotifications(){
+    const banner = document.getElementById("notifyBanner");
+    const open = tasks.filter(t => !t.done);
+    const dueToday = open.filter(t => daysUntil(t.deadline) <= 0);
+    const dueWeek = open.filter(t => { const d = daysUntil(t.deadline); return d > 0 && d <= 7; });
+
+    banner.innerHTML = "";
+    if(dueToday.length === 0 && dueWeek.length === 0){
+      banner.classList.remove("show");
+      return;
+    }
+    banner.classList.add("show");
+
+    if(dueToday.length > 0){
+      const row = document.createElement("div");
+      row.className = "notify-row urgent";
+      row.innerHTML = `<span class="dot"></span> ${dueToday.length} task${dueToday.length===1?"":"s"} due today: ${dueToday.map(t=>escapeHtml(t.name)).join(", ")}`;
+      banner.appendChild(row);
+    }
+    if(dueWeek.length > 0){
+      const row = document.createElement("div");
+      row.className = "notify-row soon";
+      row.innerHTML = `<span class="dot"></span> ${dueWeek.length} task${dueWeek.length===1?"":"s"} due this week: ${dueWeek.map(t=>escapeHtml(t.name)).join(", ")}`;
+      banner.appendChild(row);
+    }
+
+    // Browser notification for due-today tasks, once per task per browser session
+    if("Notification" in window){
+      if(Notification.permission === "default"){
+        Notification.requestPermission();
+      }
+      if(Notification.permission === "granted"){
+        dueToday.forEach(t => {
+          if(!notifiedToday.has(t.id)){
+            new Notification("Deadline Pilot", { body: `${t.name} is due today.` });
+            notifiedToday.add(t.id);
+          }
+        });
+        sessionStorage.setItem("notifiedToday", JSON.stringify([...notifiedToday]));
+      }
+    }
+  }
+
+  // ---------- calendar ----------
+  function toggleCalendar(){
+    const panel = document.getElementById("calendarPanel");
+    panel.classList.toggle("open");
+    if(panel.classList.contains("open")) renderCalendar();
+  }
+
+  function shiftMonth(delta){
+    calMonth.setMonth(calMonth.getMonth() + delta);
+    renderCalendar();
+  }
+
+  function renderCalendar(){
+    const grid = document.getElementById("calGrid");
+    const label = document.getElementById("calMonthLabel");
+    const dayTasksEl = document.getElementById("calDayTasks");
+    dayTasksEl.innerHTML = "";
+
+    const year = calMonth.getFullYear();
+    const month = calMonth.getMonth();
+    label.textContent = calMonth.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const todayStr = new Date().toISOString().slice(0,10);
+
+    // map of date string -> tasks due that day
+    const byDate = {};
+    tasks.filter(t => !t.done).forEach(t => {
+      byDate[t.deadline] = byDate[t.deadline] || [];
+      byDate[t.deadline].push(t);
+    });
+
+    grid.innerHTML = "";
+    ["S","M","T","W","T","F","S"].forEach(d => {
+      const el = document.createElement("div");
+      el.className = "cal-dow";
+      el.textContent = d;
+      grid.appendChild(el);
+    });
+
+    for(let i=0; i<firstDay; i++){
+      const el = document.createElement("div");
+      el.className = "cal-day empty";
+      grid.appendChild(el);
+    }
+
+    for(let d=1; d<=daysInMonth; d++){
+      const dateStr = `${year}-${String(month+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+      const el = document.createElement("div");
+      el.className = "cal-day" + (byDate[dateStr] ? " has-task" : "") + (dateStr === todayStr ? " today" : "");
+      el.innerHTML = d + (byDate[dateStr] ? '<span class="cal-dot"></span>' : "");
+      if(byDate[dateStr]){
+        el.onclick = () => {
+          dayTasksEl.innerHTML = byDate[dateStr].map(t => `<div>${escapeHtml(t.name)} \u00b7 ${t.effort}h</div>`).join("");
+        };
+      }
+      grid.appendChild(el);
+    }
+  }
+
+  // ---------- focus session ----------
+  let focusSecondsLeft = 0, focusTimerId = null, focusTaskId = null;
+
+  function openFocusSession(){
+    if(!currentPlan) return;
+    focusTaskId = currentPlan.id || null;
+    document.getElementById("focusTaskName").textContent = currentPlan.name;
+    const minutes = Math.max(15, Math.min(Math.round((currentPlan.effort || 1) * 60), 90));
+    focusSecondsLeft = minutes * 60;
+    updateFocusDisplay();
+    document.getElementById("focusDoneRow").classList.remove("show");
+    document.getElementById("focusStartBtn").textContent = "Start";
+    document.getElementById("focusModal").classList.add("open");
+  }
+
+  function closeFocusModal(){
+    clearInterval(focusTimerId);
+    focusTimerId = null;
+    document.getElementById("focusModal").classList.remove("open");
+  }
+
+  function updateFocusDisplay(){
+    const m = Math.floor(focusSecondsLeft / 60);
+    const s = focusSecondsLeft % 60;
+    document.getElementById("focusTime").textContent = `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+  }
+
+  function toggleFocusTimer(){
+    const btn = document.getElementById("focusStartBtn");
+    if(focusTimerId){
+      clearInterval(focusTimerId);
+      focusTimerId = null;
+      btn.textContent = "Resume";
+      return;
+    }
+    btn.textContent = "Pause";
+    focusTimerId = setInterval(() => {
+      focusSecondsLeft--;
+      updateFocusDisplay();
+      if(focusSecondsLeft <= 0){
+        clearInterval(focusTimerId);
+        focusTimerId = null;
+        document.getElementById("focusDoneRow").classList.add("show");
+        if("Notification" in window && Notification.permission === "granted"){
+          new Notification("Deadline Pilot", { body: "Focus session complete. Nice work." });
+        }
+      }
+    }, 1000);
+  }
+
+  function resetFocusTimer(){
+    clearInterval(focusTimerId);
+    focusTimerId = null;
+    const minutes = Math.max(15, Math.min(Math.round((currentPlan?.effort || 1) * 60), 90));
+    focusSecondsLeft = minutes * 60;
+    updateFocusDisplay();
+    document.getElementById("focusStartBtn").textContent = "Start";
+    document.getElementById("focusDoneRow").classList.remove("show");
+  }
+
+  function finishFocusSession(){
+    closeFocusModal();
+    if(focusTaskId) markDone(focusTaskId);
+  }
+
+  // ---------- wallet ----------
+  async function connectWallet(){
+    if(!window.ethereum){
+      alert("MetaMask not found. Please install the MetaMask browser extension.");
+      return;
+    }
+    try{
+      await window.ethereum.request({ method: "eth_requestAccounts" });
+
+      try{
+        await window.ethereum.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: BOT_CHAIN_TESTNET.chainIdHex }]
+        });
+      }catch(switchErr){
+        if(switchErr.code === 4902){
+          await window.ethereum.request({
+            method: "wallet_addEthereumChain",
+            params: [BOT_CHAIN_TESTNET]
+          });
+        }
+      }
+
+      provider = new ethers.BrowserProvider(window.ethereum);
+      signer = await provider.getSigner();
+      userAddress = await signer.getAddress();
+      contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+
+      const btn = document.getElementById("walletBtn");
+      btn.textContent = userAddress.slice(0,6) + "..." + userAddress.slice(-4);
+      btn.classList.add("connected");
+
+      updateLogStrip();
+      render();
+    }catch(err){
+      console.error(err);
+      alert("Wallet connection failed. See console for details.");
+    }
+  }
+
+  async function updateLogStrip(){
+    const strip = document.getElementById("logStrip");
+    const text = document.getElementById("logText");
+    if(!userAddress){
+      text.textContent = "Connect your wallet to log completed tasks on-chain.";
+      strip.classList.remove("active");
+      return;
+    }
+    try{
+      const count = await contract.getTaskCount(userAddress);
+      text.innerHTML = `<span class="mono">${count.toString()}</span> task${count == 1 ? "" : "s"} logged on-chain \u00b7 <span id="logAddress" class="mono">${userAddress.slice(0,6)}...${userAddress.slice(-4)}</span>`;
+      strip.classList.add("active");
+    }catch(err){
+      text.textContent = "Connected, but couldn't reach the contract. Check the contract address is set.";
+      console.error(err);
+    }
+  }
+
+  // ---------- tasks ----------
+  function toggleForm(){
+    const form = document.getElementById("addTaskForm");
+    form.classList.toggle("open");
+    if(form.classList.contains("open")) document.getElementById("inputName").focus();
+  }
+
+  function addTask(){
+    const name = document.getElementById("inputName").value.trim();
+    const deadline = document.getElementById("inputDeadline").value;
+    const effort = parseFloat(document.getElementById("inputEffort").value) || 1;
+
+    if(!name || !deadline){
+      alert("Give the task a name and a deadline.");
+      return;
+    }
+
+    tasks.push({ id: Date.now().toString(), name, deadline, effort, done: false });
+    saveTasks();
+
+    document.getElementById("inputName").value = "";
+    document.getElementById("inputDeadline").value = "";
+    document.getElementById("inputEffort").value = "";
+    toggleForm();
+    render();
+  }
+
+  function saveTasks(){
+    localStorage.setItem("deadlinePilotTasks", JSON.stringify(tasks));
+  }
+
+  function daysUntil(dateStr){
+    const now = new Date();
+    const d = new Date(dateStr + "T23:59:59");
+    return Math.ceil((d - now) / (1000*60*60*24));
+  }
+
+  function statusClass(days){
+    if(days <= 1) return "urgent";
+    if(days <= 3) return "soon";
+    return "later";
+  }
+
+  function countdownLabel(days){
+    if(days < 0) return "Overdue";
+    if(days === 0) return "Due today";
+    if(days === 1) return "Due tomorrow";
+    return `Due in ${days} days`;
+  }
+
+  // Rule-based prioritization: nearest deadline, weighted by effort.
+  // Swap this out for a real AI API call later if you have a backend proxy for the key.
+  function computePlan(){
+    const open = tasks.filter(t => !t.done);
+    if(open.length === 0) return null;
+
+    const scored = open.map(t => {
+      const days = daysUntil(t.deadline);
+      const urgency = 1 / Math.max(days, 0.5);
+      const score = urgency * 10 + t.effort * 0.3;
+      return { ...t, days, score };
+    });
+
+    scored.sort((a,b) => b.score - a.score);
+    return scored[0];
+  }
+
+  async function getAIPlan(){
+    const open = tasks.filter(t => !t.done);
+    if(open.length === 0) return null;
+
+    try{
+      const res = await fetch(AI_WORKER_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tasks: open })
+      });
+
+      const data = await res.json();
+      if(!res.ok || data.error) throw new Error(data.error || ("Worker returned " + res.status));
+
+      const matched = open.find(t => t.name === data.taskName);
+      return {
+        id: matched ? matched.id : null,
+        name: data.taskName,
+        effort: data.hours || (matched ? matched.effort : 1),
+        reason: data.reason,
+        days: matched ? daysUntil(matched.deadline) : null,
+        source: "ai"
+      };
+    }catch(err){
+      console.warn("AI plan unavailable, using rule-based fallback:", err.message);
+      const fallback = computePlan();
+      return fallback ? { ...fallback, source: "rules" } : null;
+    }
+  }
+
+  async function render(){
+    const list = document.getElementById("taskList");
+    list.innerHTML = "";
+
+    renderNotifications();
+    if(document.getElementById("calendarPanel").classList.contains("open")) renderCalendar();
+
+    const open = tasks.filter(t => !t.done);
+
+    if(open.length === 0){
+      list.innerHTML = `<li class="empty-state">No tasks yet. Add one above to get your first recommendation.</li>`;
+    } else {
+      open
+        .slice()
+        .sort((a,b) => daysUntil(a.deadline) - daysUntil(b.deadline))
+        .forEach(t => {
+          const days = daysUntil(t.deadline);
+          const li = document.createElement("li");
+          li.className = "task-row";
+          li.innerHTML = `
+            <span class="status-bar ${statusClass(days)}"></span>
+            <div class="task-info">
+              <p class="task-name">${escapeHtml(t.name)}</p>
+              <p class="task-meta"><span class="countdown mono">${countdownLabel(days)}</span> \u00b7 ${t.effort}h estimated</p>
+            </div>
+            <button class="task-done-btn" onclick="markDone('${t.id}')" ${userAddress ? "" : "disabled"}>${userAddress ? "Mark done" : "Connect wallet"}</button>
+          `;
+          list.appendChild(li);
+        });
+    }
+
+    const focusBtn = document.getElementById("focusBtn");
+    const nowText = document.getElementById("nowText");
+
+    if(open.length === 0){
+      nowText.textContent = "Add a task below and Deadline Pilot will tell you what to work on first.";
+      focusBtn.disabled = true;
+      return;
+    }
+
+    nowText.textContent = "Thinking...";
+    focusBtn.disabled = true;
+
+    const plan = await getAIPlan();
+    currentPlan = plan;
+
+    if(plan){
+      const reasonPart = plan.reason ? ` \u2014 ${plan.reason}` : (plan.days !== null ? ` \u2014 ${countdownLabel(plan.days).toLowerCase()}` : "");
+      nowText.innerHTML = `Focus on <span class="hl">${escapeHtml(plan.name)}</span> for about ${plan.effort} hour${plan.effort == 1 ? "" : "s"} today${reasonPart}.`;
+      focusBtn.disabled = false;
+      focusBtn.onclick = openFocusSession;
+    } else {
+      nowText.textContent = "Add a task below and Deadline Pilot will tell you what to work on first.";
+      focusBtn.disabled = true;
+    }
+  }
+
+  async function markDone(id){
+    const task = tasks.find(t => t.id === id);
+    if(!task) return;
+
+    if(!contract){
+      alert("Connect your wallet first.");
+      return;
+    }
+
+    try{
+      const tx = await contract.completeTask(task.name);
+      await tx.wait();
+
+      task.done = true;
+      saveTasks();
+      updateLogStrip();
+      render();
+    }catch(err){
+      console.error(err);
+      alert("Couldn't log this on-chain. Check your wallet is on BOT Chain Testnet and has BOT for gas.");
+    }
+  }
+
+  function escapeHtml(str){
+    const div = document.createElement("div");
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  render();
+</script>
+
+</body>
+</html>
