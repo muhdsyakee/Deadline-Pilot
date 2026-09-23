@@ -445,12 +445,12 @@
     "event TaskCompleted(address indexed student, string taskName, uint256 timestamp)"
   ];
 
-  const BOT_CHAIN_TESTNET = {
-    chainIdHex: "0x3C8", // 968 in hex
-    chainName: "BOT Chain Testnet",
-    rpcUrls: ["https://rpc.bohr.life"],
+  const BOT_CHAIN_MAINNET = {
+    chainIdHex: "0x2A5", // 677 in hex
+    chainName: "BOT Chain Mainnet",
+    rpcUrls: ["https://rpc.botchain.ai"],
     nativeCurrency: { name: "BOT", symbol: "BOT", decimals: 18 },
-    blockExplorerUrls: ["https://scan.bohr.life/"]
+    blockExplorerUrls: ["https://scan.botchain.ai"]
   };
 
   // ---- Paste your deployed Cloudflare Worker URL here ----
@@ -645,13 +645,13 @@
       try{
         await window.ethereum.request({
           method: "wallet_switchEthereumChain",
-          params: [{ chainId: BOT_CHAIN_TESTNET.chainIdHex }]
+          params: [{ chainId: BOT_CHAIN_MAINNET.chainIdHex }]
         });
       }catch(switchErr){
         if(switchErr.code === 4902){
           await window.ethereum.request({
             method: "wallet_addEthereumChain",
-            params: [BOT_CHAIN_TESTNET]
+            params: [BOT_CHAIN_MAINNET]
           });
         }
       }
