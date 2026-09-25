@@ -57,6 +57,13 @@
     font-weight: 600;
     letter-spacing: -0.01em;
   }
+  .bot-logo{
+    height: 20px;
+    width: auto;
+    margin-left: 8px;
+    border-radius: 3px;
+    vertical-align: middle;
+  }
   #walletBtn{
     background: transparent;
     border: 1px solid var(--panel-line);
@@ -310,6 +317,16 @@
   .log-strip.active .diamond{ background: var(--green); }
   #logAddress{ color: var(--muted); }
 
+  .explorer-link{
+    display: inline-block;
+    margin-top: 12px;
+    font-size: 12.5px;
+    color: var(--amber);
+    text-decoration: none;
+    font-family:'IBM Plex Mono', monospace;
+  }
+  .explorer-link:hover{ text-decoration: underline; }
+
   /* focus session modal */
   #focusModal{
     display:none;
@@ -369,6 +386,7 @@
     <div class="wordmark">
       <span class="glyph"></span>
       <span>Deadline Pilot</span>
+      <a href="https://botchain.ai" target="_blank" rel="noopener"><img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBT/wgARCADIAMgDASIAAhEBAxEB/8QAHAABAAIDAQEBAAAAAAAAAAAAAAYHBAUIAgED/8QAGwEBAAIDAQEAAAAAAAAAAAAAAAMGAQIFBwT/2gAMAwEAAhADEAAAAeVAAAAAAAAAAAAAAAAAAAAAAAAAAAAAANlrdsjlME6V0klQoFK4pHbQTAAAAAAAAANtqclp0gr+ffR5h6iMuI+f9N0tX8Vwqlm4WllBkAAAAAAABvdER3lJ+Z5nJVLlazZy1PDqe5INp2qfEPoIAAAAAADZa3bI5bAuk9RJT+fUxh8duyejOa+lZKv6g84gm/CqEQelgAAAAAANtqctp0ci8o+jytGZMKHuvMgGnc1cC/TDiuAPrAAAAAAZuFdeefSi2azbYcxhrE/Qe25tsCWo2kxsmSr4VUXJCtO3TYh9CAAAAAAXdSN2b1+W4eYmodTQPpXRx2mgkoi8Vu2PQ/NPSslV9Q6YwnfhU4IPTAAAAAAGbhGLVsDmrb71voJDJlLT/sNmXhmgLyg1dxXKZwPw07IPpAAAAAAAASOOEdu17pGfjDHQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//8QAJBAAAQMEAQQDAQAAAAAAAAAABAIDBQABBhBAETAxNRQgMmD/2gAIAQEAAQUC/rQG7PGyWLOsUpF0X40X7OpCHHkbSWPkAcaL9luRxscyjosiPXw2nbsuRuVIdpKrLTpaEupksUSuiRXRV8MCXIj1Rs+Of9ChGTG5yCtGp4kbkj4dBSTEgjWX+u4ADaXjZLFXGqcbu0rTTq2XEfisv9dwIv2dHxQ8imRxwgLVvKfzWXrT8HgRfs9yMAOfR0MTHLeKaEZksrWunHVPL4A71x347IBzvpe1lWmsddLcIHcGc79xnbM7jskICoGUHkU7KCZNROQVo1HextFlwsliqHKJGdFXptxTSo3KlooclopvWWp6xnexj1FFCMmNyeLOMUpN030GY6E5bxWV26xXexdVrxO5CHHkbSMARH6t5T+aygtr4PeGKdEXG5WldNuJdRrzUljLBdFxz4DhBrITMllLr9KVdV+AFJPx6o3JmCqtfrpa0tpmMkZWgglwlfEj5wmOpWWsfHPlSJFX9f8A/8QALBEAAQQCAQMCAwkAAAAAAAAAAQACAwQREgUhIjCRoRRhgSMxNEBBQlBx0f/aAAgBAwEBPwH89IcMJCqc2W9lj1UUrJm7xnI8b27NIVipNVdiQKCxLXdtGcKpzUcnbP0PsgQ4ZHiexsg1eMhXOE/fW9E+N0R1eMFcVZlZO2IHtPhkOGEhVObc3tsdfmopo527RnK5/wC6P6rjATbZ4XjZpAU0EkDtZBhQzyQO2jOEbUfJFjLJ1x7/AOKvXhrtxEPBdtfBxiTGeqrXIbQzGVLDHO3WQZCt8I5ndX6/JOaWHDguKtSsnbFntPg5v8L9U17mHZpwVT5sjsseqjlZM3aM5C59o+zd/a45rjaZgfr4CARgq3wscvdB0Psp60tZ2sgVexNA7MRTqsnJsY6wNcKCvFXbrGMeJ8bJW6vGQq9CvWO0bev8D//EAB8RAAEEAwADAQAAAAAAAAAAAAEAAhEwEDFREiFAUP/aAAgBAgEBPwH7yzloM4LYsDu4cKizmGJ2qtqJUeOkfdAEoiMB/cOHqhu8FnMMTtUh0KZREqfHVhJP4P8A/8QANRAAAgACBgcHAwQDAAAAAAAAAQIAAxAREjFBUgQTICEjQGEiMEJRU3OxMmCRcYGiwWKCof/aAAgBAQAGPwL7tkS2+lnCn8wX0bjJl8Qio7jy+i+6vzR21szM63wWq1srOvLaL7q/OwWl8Cb0uMVTU3ZhceUV13MprBgJpYsNnF0BlIYHEUlXUMpwMF9ENg+m10WJqFG68pw2rXI10BTwpuVsf02LE5A46wJst65Raqo3jlQkzjSut4i1Jes4qbxTL93+jyMiW/0s4B/MF9FOtXIfqiywqIwNIZGKMMRC7691Ev3R8HkdF91fmjip2s4vgsnGleYvFIolJWLWsrq/Y8jovur87BYDUzcy4xxFtJnW6Lc1wi9YKaKNWuc3wWclmOJ5GXNArKMGEBWOpm5W2KiKxBnSZpY+m/8AUFJilG8jyCzbB1bXNsBX40rya8fvFcp+1ihvGxYnSw4/6IE1JlqUTZqN479FYBlJO4wX0Q2G9M3RYmoUbyNIZSVYYiAmli2vqLfFuU4delKnymD4Pfy/1NFicgcQX0bipl8Qio7jTbkuUMCj/cd+gr3hjsdtbMzOt8FqtZKzrSKGkWxrSR2R39uU5RukBNLFk+ot0BkYOpxGwXk8Cb/ExZnJZ64GA85wgq/MFNG4SZvEYrO88jakuR/jgYCz+BM/iY3UFmIVRiYaTIlicD4nG6LUxy7deVqVrcvI10WhLbXZMPzFc1+zgguH3h//xAAoEAEAAQMDAwQDAAMAAAAAAAABEQAhQTFRcRBAgSAwofBgYZGx0eH/2gAIAQEAAT8h/LRlk9/TSRLu/o0xNBhHHb/a7Oid2y15b1DEPBpyY7b63Z11qJYmT/Y/1UyRje83aNnAbRKiE2+/kxV/CQkj1tlETka3M3I4cUjH8DtOfbcdSrnzW5PQqwXkcOKt9a65C+dO0GKvpO0P+TUUMGFzHX4bsQFJPpiRFCojfA43pKjXBCdXXBZ4SikkkJXPZsPpdnSGQY2T5rTV4/6FJWnzXx+moFF28anY/S7PRf2cVuRUwutrv/FAzo1WvG9J4MzeDFakdHlexJkIHRhmo9N0s8PociTUdGrilsun6WOKFHdRjsHSLJBbqVMNPN/CkRdmD4vQ3wIvwNKq3MkfOnvljDQkb1ArrS38OKVj+HrcJgJCVtq0FvJmgTlldblaj3z7vfpsomdThqSbrz+jSMULI9RqTZjR5py250RIw/8An3wCGVB0v6H7tFry3ppIWDTkx00+a+P0DPnNZDW+3vgRbLrYRsjkx4rRzE8j1SENxqwFMB8GPFE23W18DWg1IdeBmoBOn9lqQqpdXsYqXKvzFQqFtK/JjzQEVI5Ol9mCkBVlpjO8TNfsWj7Vg8p/DajldZaKSFcB4vzD/9oADAMBAAIAAwAAABDzzzzzzzzzzzzzzzzzzzzzzzzzzzzzyz/fzzzzzzzzzz3D7fzzzzzzzzzz3/37zzzzzzzz9vouvzzzzzzzzr65afzzzzzzzrV/D1rzzzzzzy3w34rrzzzzzzzzrYpl7zzzzzzzzy47zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz/8QAJhEBAAAEBQQCAwAAAAAAAAAAAQARMUEhUWGBwTBxobGR0UBQ8P/aAAgBAwEBPxD85K8B9RLhmZK7n15gcFMumhtxPEYY5Zs9mJia/qlGJSWtd9etYELMb9JaBLMTJpu4eH5hqwLMPZmSS1PG3RRZiD6iUHJkruXggcac5bwQTXhEoS/D0Xq5H1Ezda8ZxN3XvvnFV/4lJpcO0HRg3qu/QmjIkE0Z0is3ccE2+ocH1OMoIWkzV2zhawSzWAc5kkcTbLoBcBZzBNQUSJCMzJXc5PMFCpcgIBi1fEMs6QXQ6CoZjEybSu5PWkT4z09mDahyz2vFS1TCrOXxS84krjy93pMDpZhHiF3FO06fof/EAB0RAQACAwADAQAAAAAAAAAAAAEAESEwMRBAQVD/2gAIAQIBAT8Q947PpCJh13TA4iCUxcjXzJK8QI8gJekLZdmERpnbOuk7BMiI6lrOUSs6LFROoKNkuxA3AbaHCD3wERpn1FS0rgwGRAFMBbqKuXUKZJ1Pwf/EACcQAQABAwMDBAIDAAAAAAAAAAERACExQVFhEEBxgZGhsSAwYMHw/9oACAEBAAE/EP5auMuGFAIOlmmjRK2A409MPFJ78GijIm/bGeoIocCHBdNg4fSKTWUopRvffK5zSQp2hn8OSARJG0NM3Rs8+HzDdGpcy/XG7hh47Rvx5RKpG5vFTWKwz7RcknijhFDgbiWeo2LhJuRs0ebfTS3v+DJyVtNA08jhOS3aA2Yc70M2eSKCJjGaeiPhh4fwVvZsXdwuvDTLYqrwFywhXs4s57R3JM8NLNgsKxHOGzPpRcGkg/wMknPaR1En+kISTFnNBNDDA2WLfDw0kvoYRsj1NnZQ9QUBMYZSjLG/ZQzPWEkCBEfaYXOGSmRNw2555tDck3TFIMJeviK+J+ukgRjjmQQZiUJ7Az+MKOG4yj23yQ86UasRCVvqxdwxRXq6hRgZXBSbrkMQ9j5Pim61LLOV7HLoMsIDGlqGQRjz88D4YfP4GseBiGyOaYcmWpJlwhsgDeljjCq83ycluwuvgCaMJOjw9UiOtMwgGDc14thk2iiqAl7iajkk/COmoHHIFx8UeRYO8SXLCFe2nn9xmiyCuAuyNkpBg3K+yXDJyVs8kEm44Tk6umMXoNRKFQAAA2NL0Q21qwZq+h2TI8PXGC2byH9/uM1/jb+itvvDC7hcfDSxalYjiLHxDxT7VQ4R2TrBQ5HYnAwnDTuZBfbopBRh2IH2n7jNHD4MWTSTSfwt7eI4/QefRKuYMjkHvfTmkhiviK+J+ukONdIRk+A1/ft0SkmyYThoYswhyk5z+UvBQZYks3CdTUAEImTas7oW6OR8vY03KRFqtGz4ya0VPCRLRgLrxTbLmRtcOPTLzSpQUpVdV7GXpM+8DZ85NGk3MBMTj6Pc0BQwiSI6j0H+sOBuraiJQw05e6NFiHRp+92vINgwHBbtYpw3Z/sPx6zVoWC5Lu6j0nxmrfAyl5BqeWXmn+X/AP/Z" alt="BOT Chain" class="bot-logo"></a>
     </div>
     <button id="walletBtn" onclick="connectWallet()">Connect wallet</button>
   </header>
@@ -418,6 +436,10 @@
     <span id="logText">Connect your wallet to log completed tasks on-chain.</span>
   </div>
 
+  <a class="explorer-link" href="https://scan.botchain.ai/address/0x697C4460302b9Bed7343df09b84b1868217ACE08" target="_blank" rel="noopener">
+    View contract on BOT Chain Explorer &rarr;
+  </a>
+
 </div>
 
 <div id="focusModal">
@@ -454,7 +476,7 @@
   };
 
   // ---- Paste your deployed Cloudflare Worker URL here ----
-  const AI_WORKER_URL = "https://deadline-pilot-ai.muhdsykr13.workers.dev/";
+  const AI_WORKER_URL = "https://PASTE_YOUR_WORKER_URL_HERE.workers.dev";
 
   let provider, signer, contract, userAddress = null;
   let tasks = JSON.parse(localStorage.getItem("deadlinePilotTasks") || "[]");
